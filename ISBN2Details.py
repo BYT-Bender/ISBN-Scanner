@@ -8,11 +8,11 @@ def ISBN2Details(ISBN):
         if BookData["totalItems"] == 0:
             return None
         else:
-            Title = BookData["items"][0]["volumeInfo"]["title"]
-            Author = BookData["items"][0]["volumeInfo"]["authors"][0]
-            Publisher = BookData["items"][0]["volumeInfo"]["publisher"]
-            Publish_Date = BookData["items"][0]["volumeInfo"]["publishedDate"]
-            Details_Dict = {"Title": Title, "Author": Author, "Publisher": Publisher, "Publish_Date": Publish_Date}
-            return Details_Dict
+            title = BookData["items"][0]["volumeInfo"]["title"]
+            author = BookData["items"][0]["volumeInfo"]["authors"][0]
+            publisher = BookData["items"][0]["volumeInfo"]["publisher"]
+            publish_date = BookData["items"][0]["volumeInfo"]["publishedDate"]
+            book_details = {"title": title, "author": author, "publisher": publisher, "publish_date": publish_date}
+            return book_details
     else:
         return None
