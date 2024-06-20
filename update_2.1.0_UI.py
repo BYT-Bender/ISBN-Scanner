@@ -29,16 +29,20 @@ class ISBNScanner:
         self.root.geometry("800x600")
 
         self.video_frame = tk.Label(root)
-        self.video_frame.pack()
+        self.video_frame.pack(side=tk.LEFT, fill="both", expand=True)
 
         self.details_frame = ttk.LabelFrame(root, text="Book Details")
-        self.details_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        self.details_frame.pack(side=tk.RIGHT, fill="both", expand=True, padx=10, pady=10)
 
         self.details_text = tk.Text(self.details_frame, height=10)
         self.details_text.pack(fill="both", expand=True)
 
         self.quit_button = ttk.Button(root, text="Quit", command=root.quit)
-        self.quit_button.pack(pady=10)
+        self.quit_button.pack(pady=10, side=tk.BOTTOM)
+
+        self.book_listbox = tk.Listbox(self.details_frame, height=10, width=40)
+        self.book_listbox.pack(side=tk.RIGHT, fill="both", padx=10, pady=10)
+        self.book_details = []
 
         self.cap = cv2.VideoCapture(0)
         self.update_frame()
@@ -56,16 +60,16 @@ class ISBNScanner:
                 barcode_data = barcode.data.decode('utf-8')
                 barcode_type = barcode.type
 
+                text = f"{barcode_data} ({barcode_type})"
+
                 if barcode_type == "EAN13":
                     book_details = get_book_details(barcode_data)
                     if 'title' in book_details:
                         text = f"{book_details['title']} by {book_details['author']}"
-                        self.show_book_details(book_details)
+                        self.show_book_details(barcode_data, book_details)
                     else:
                         text = "Book details not found"
                         messagebox.showwarning("Book Details", "Book details not found")
-                else:
-                    text = f"{barcode_data} ({barcode_type})"
 
                 cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -76,10 +80,18 @@ class ISBNScanner:
 
         self.root.after(10, self.update_frame)
 
-    def show_book_details(self, book_details):
+    def show_book_details(self, isbn, book_details):
         self.details_text.delete(1.0, tk.END)
-        for key, value in book_details.items():
-            self.details_text.insert(tk.END, f"{key.capitalize()}: {value}\n")
+        self.details_text.insert(tk.END, f"Title: {book_details['title']}\n")
+        self.details_text.insert(tk.END, f"Author: {book_details['author']}\n")
+        self.details_text.insert(tk.END, f"Publisher: {book_details['publisher']}\n")
+        self.details_text.insert(tk.END, f"Published Date: {book_details['publish_date']}\n")
+
+        # Add to the listbox (show only ISBN and title)
+        self.book_listbox.insert(tk.END, f"{isbn} - {book_details['title']}")
+
+        # Store full details including ISBN for future reference
+        self.book_details.append({"isbn": isbn, "details": book_details})
 
 if __name__ == "__main__":
     root = tk.Tk()
