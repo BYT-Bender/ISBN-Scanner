@@ -6,12 +6,10 @@ import requests
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, QMessageBox
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
-from PIL import Image
 from datetime import datetime
-import warnings
 
 
-def get_book_details(ISBN):
+def ISBN2Details(ISBN):
     URL = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + str(ISBN)
     try:
         Response = requests.get(URL)
@@ -25,8 +23,24 @@ def get_book_details(ISBN):
             authors = volume_info.get("authors", ["N/A"])
             author = authors[0] if authors else "N/A"
             publisher = volume_info.get("publisher", "N/A")
-            publish_date = volume_info.get("publishedDate", "N/A")
-            book_details = {"title": title, "author": author, "publisher": publisher, "publish_date": publish_date}
+            publishedDate = volume_info.get("publishedDate", "N/A")
+            description = volume_info.get("description", "N/A")
+            pageCount = volume_info.get("pageCount", "N/A")
+            categories = volume_info.get("categories", ["N/A"])
+            category = categories[0] if categories else "N/A"
+            language = volume_info.get("language", "N/A")
+            
+            book_details = {
+                "ISBN-13": ISBN,
+                "Title": title,
+                "Author": author,
+                "Publisher": publisher,
+                "Edition": publishedDate,
+                "Description": description,
+                "Pages": pageCount,
+                "Genre": category,
+                "Language": language
+            }
             return book_details
     except requests.exceptions.RequestException as e:
         print(f"Error fetching book details: {e}")
@@ -108,7 +122,7 @@ class ISBNScanner(QWidget):
                 if any(book['isbn'] == barcode_data for book in self.scanned_books):
                     self.update_status("Entry already exists")
                 else:
-                    book_details = get_book_details(barcode_data)
+                    book_details = ISBN2Details(barcode_data)
                     if book_details:
                         self.show_book_details(barcode_data, book_details)
                         self.scanned_books.append({
@@ -128,13 +142,17 @@ class ISBNScanner(QWidget):
 
     def show_book_details(self, isbn, book_details):
         self.details_text.clear()
-        self.details_text.append(f"Title: {book_details['title']}")
-        self.details_text.append(f"Author: {book_details['author']}")
-        self.details_text.append(f"Publisher: {book_details['publisher']}")
-        self.details_text.append(f"Published Date: {book_details['publish_date']}")
+        self.details_text.append(f"Title: {book_details['Title']}")
+        self.details_text.append(f"Author: {book_details['Author']}")
+        self.details_text.append(f"Publisher: {book_details['Publisher']}")
+        self.details_text.append(f"Published Date: {book_details['Edition']}")
+        self.details_text.append(f"Description: {book_details['Description']}")
+        self.details_text.append(f"Pages: {book_details['Pages']}")
+        self.details_text.append(f"Genre: {book_details['Genre']}")
+        self.details_text.append(f"Language: {book_details['Language']}")
 
-        self.book_list.addItem(f"{isbn} - {book_details['title']}")
-        self.process_list.addItem(f"Scanned: {isbn} - {book_details['title']}")
+        self.book_list.addItem(f"{isbn} - {book_details['Title']}")
+        self.process_list.addItem(f"Scanned: {isbn} - {book_details['Title']}")
 
     def update_status(self, message):
         self.status_label.setText(message)
@@ -142,16 +160,20 @@ class ISBNScanner(QWidget):
     def save_scanned_books(self):
         try:
             with open('scanned_books.csv', 'w', newline='', encoding='utf-8') as csvfile:
-                fieldnames = ['isbn', 'title', 'author', 'publisher', 'publish_date', 'timestamp']
+                fieldnames = ['isbn', 'title', 'author', 'publisher', 'publish_date', 'description', 'pages', 'genre', 'language', 'timestamp']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
                 for book in self.scanned_books:
                     writer.writerow({
                         'isbn': book['isbn'],
-                        'title': book['details']['title'],
-                        'author': book['details']['author'],
-                        'publisher': book['details']['publisher'],
-                        'publish_date': book['details']['publish_date'],
+                        'title': book['details']['Title'],
+                        'author': book['details']['Author'],
+                        'publisher': book['details']['Publisher'],
+                        'publish_date': book['details']['Edition'],
+                        'description': book['details']['Description'],
+                        'pages': book['details']['Pages'],
+                        'genre': book['details']['Genre'],
+                        'language': book['details']['Language'],
                         'timestamp': book['timestamp']
                     })
         except IOError as e:
@@ -165,10 +187,14 @@ class ISBNScanner(QWidget):
                     self.scanned_books.append({
                         'isbn': row['isbn'],
                         'details': {
-                            'title': row['title'],
-                            'author': row['author'],
-                            'publisher': row['publisher'],
-                            'publish_date': row['publish_date']
+                            'Title': row['title'],
+                            'Author': row['author'],
+                            'Publisher': row['publisher'],
+                            'Edition': row['publish_date'],
+                            'Description': row['description'],
+                            'Pages': row['pages'],
+                            'Genre': row['genre'],
+                            'Language': row['language']
                         },
                         'timestamp': row['timestamp']
                     })
