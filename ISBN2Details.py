@@ -14,3 +14,5 @@ def ISBN2Details(ISBN):
             Publish_Date = BookData["items"][0]["volumeInfo"]["publishedDate"]
             Details_Dict = {"Title" : Title, "Author" : Author, "Publisher" : Publisher, "Publish_Date" : Publish_Date}
             return Details_Dict
+    else:
+        return None
