@@ -1,13 +1,14 @@
 import sys
 import csv
 import cv2
-from pyzbar.pyzbar import decode
+from pyzbar.pyzbar import decode, ZBarSymbol
 import requests
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, QMessageBox
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from PIL import Image
 from datetime import datetime
+import warnings
 
 
 def get_book_details(ISBN):
@@ -79,15 +80,18 @@ class ISBNScanner(QWidget):
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(10)
 
+    def decode_barcodes(self, frame):
+        try:
+            return decode(frame, symbols=[ZBarSymbol.EAN13])
+        except Exception as e:
+            print(f"Error decoding barcodes: {e}")
+            return []
+
     def update_frame(self):
         ret, frame = self.cap.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            try:
-                barcodes = decode(frame)
-            except Exception as e:
-                print(f"Error decoding barcodes: {e}")
-                barcodes = []
+            barcodes = self.decode_barcodes(frame)
 
             for barcode in barcodes:
                 (x, y, w, h) = barcode.rect
@@ -115,7 +119,6 @@ class ISBNScanner(QWidget):
                         self.save_scanned_books()
                     else:
                         self.update_status("Invalid barcode")
-                        QMessageBox.warning(self, "Book Details", "Book details not found")
 
                 cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
