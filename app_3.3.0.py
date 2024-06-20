@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QTextEdi
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from datetime import datetime
+import winsound
 
 
 def ISBN2Details(ISBN):
@@ -69,6 +70,7 @@ class ISBNScanner(QWidget):
 
         self.process_list = QListWidget(self)
         self.book_list = QListWidget(self)
+        self.book_list.itemClicked.connect(self.display_selected_book_details_wrapper)
 
         self.layout = QHBoxLayout()
         self.left_layout = QVBoxLayout()
@@ -115,12 +117,14 @@ class ISBNScanner(QWidget):
                 barcode_type = barcode.type
 
                 if barcode_type != "EAN13":
-                    continue  # Skip non-EAN13 barcodes
+                    continue
 
                 text = f"{barcode_data} ({barcode_type})"
 
                 if any(book['isbn'] == barcode_data for book in self.scanned_books):
                     self.update_status("Entry already exists")
+                    # self.display_selected_book_details(barcode_data)
+                    self.play_sound("status_change")
                 else:
                     book_details = ISBN2Details(barcode_data)
                     if book_details:
@@ -131,8 +135,10 @@ class ISBNScanner(QWidget):
                             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         })
                         self.save_scanned_books()
+                        self.play_sound("scan_success")
                     else:
                         self.update_status("Invalid barcode")
+                        self.play_sound("scan_error")
 
                 cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -153,6 +159,19 @@ class ISBNScanner(QWidget):
 
         self.book_list.addItem(f"{isbn} - {book_details['Title']}")
         self.process_list.addItem(f"Scanned: {isbn} - {book_details['Title']}")
+
+    def display_selected_book_details(self, isbn):
+        book = next((book for book in self.scanned_books if book['isbn'] == isbn), None)
+        if book:
+            self.details_text.clear()
+            self.details_text.append(f"Title: {book['details']['Title']}")
+            self.details_text.append(f"Author: {book['details']['Author']}")
+            self.details_text.append(f"Publisher: {book['details']['Publisher']}")
+            self.details_text.append(f"Published Date: {book['details']['Edition']}")
+            self.details_text.append(f"Description: {book['details']['Description']}")
+            self.details_text.append(f"Pages: {book['details']['Pages']}")
+            self.details_text.append(f"Genre: {book['details']['Genre']}")
+            self.details_text.append(f"Language: {book['details']['Language']}")
 
     def update_status(self, message):
         self.status_label.setText(message)
@@ -203,6 +222,20 @@ class ISBNScanner(QWidget):
             pass
         except IOError as e:
             print(f"Error loading scanned books: {e}")
+
+    def display_selected_book_details_wrapper(self, item):
+        isbn = item.text().split(' - ')[0]
+        self.display_selected_book_details(isbn)
+
+    def play_sound(self, sound_type):
+        if sound_type == "scan_success":
+            winsound.Beep(1000, 200)
+        elif sound_type == "scan_error":
+            winsound.Beep(500, 400)
+        elif sound_type == "status_change":
+            winsound.Beep(800, 300)
+        else:
+            print(f"Unknown sound type: {sound_type}")
 
 
 if __name__ == "__main__":
