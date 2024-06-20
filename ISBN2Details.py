@@ -1,7 +1,7 @@
 import requests
 
 def ISBN2Details(ISBN):
-    URL = "https://www.googleapis/com/books/v1/volumes?q=isbn:" + ISBN
+    URL = "https://www.googleapis/com/books/v1/volumes?q=isbn:" + str(ISBN)
     Response = requests.get(url)
     if Response.status_code == 200:
         BookData = Response.json()
