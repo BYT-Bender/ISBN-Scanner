@@ -1,7 +1,7 @@
 import csv
 import os
 
-def PushToCSV(ISBN_Dict)
+def PushToCSV(ISBN_Dict) :
     File = "BookCollection.csv"
     fields = ["ISBN-13", "Title", "Author", "Publisher", "Edition", "Description", "Pages", "Genre", "Language"]
     # No need for this. My_Dict = ISBN_Dict
