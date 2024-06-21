@@ -1,16 +1,16 @@
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget
+from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QImage, QPixmap
+from datetime import datetime
 import sys
 import csv
 import cv2
 from pyzbar.pyzbar import decode, ZBarSymbol
 import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, QMessageBox
-from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QImage, QPixmap
-from datetime import datetime
 import winsound
 
 
-def ISBN2Details(ISBN):
+def get_book_details(ISBN):
     URL = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + str(ISBN)
     try:
         Response = requests.get(URL)
@@ -47,7 +47,6 @@ def ISBN2Details(ISBN):
         print(f"Error fetching book details: {e}")
         return None
 
-
 class ISBNScanner(QWidget):
     def __init__(self):
         super().__init__()
@@ -57,12 +56,25 @@ class ISBNScanner(QWidget):
 
         self.video_label = QLabel(self)
         self.video_label.setFixedSize(640, 480)
+        self.video_label.setAlignment(Qt.AlignCenter)
 
         self.details_text = QTextEdit(self)
         self.details_text.setReadOnly(True)
 
         self.quit_button = QPushButton("Quit", self)
         self.quit_button.clicked.connect(self.close)
+
+        self.delete_button = QPushButton("Delete", self)
+        self.delete_button.clicked.connect(self.delete_selected_book)
+
+        self.toggle_dark_theme_button = QPushButton("Toggle Dark Theme", self)
+        self.toggle_dark_theme_button.clicked.connect(self.toggle_dark_theme)
+
+        self.toggle_camera_button = QPushButton("Toggle Camera", self)
+        self.toggle_camera_button.clicked.connect(self.toggle_camera)
+
+        self.dark_theme_enabled = False
+        self.camera_on = True
 
         self.status_label = QLabel("Ready", self)
         self.status_label.setFrameStyle(QFrame.Panel | QFrame.Sunken)
@@ -75,14 +87,23 @@ class ISBNScanner(QWidget):
         self.layout = QHBoxLayout()
         self.left_layout = QVBoxLayout()
         self.right_layout = QVBoxLayout()
+        self.button_layout = QHBoxLayout()
 
         self.left_layout.addWidget(self.video_label)
         self.left_layout.addWidget(self.status_label)
 
+        self.button_layout.addWidget(self.toggle_dark_theme_button)
+        self.button_layout.addWidget(self.toggle_camera_button)
+        self.left_layout.addLayout(self.button_layout)
+
         self.right_layout.addWidget(self.details_text)
         self.right_layout.addWidget(self.book_list)
         self.right_layout.addWidget(self.process_list)
-        self.right_layout.addWidget(self.quit_button)
+
+        self.bottom_layout = QHBoxLayout()
+        self.bottom_layout.addWidget(self.delete_button)
+        self.bottom_layout.addWidget(self.quit_button)
+        self.right_layout.addLayout(self.bottom_layout)
 
         self.layout.addLayout(self.left_layout)
         self.layout.addLayout(self.right_layout)
@@ -96,6 +117,26 @@ class ISBNScanner(QWidget):
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(10)
 
+        self.flash_timer = QTimer()
+        self.flash_timer.timeout.connect(self.reset_flash)
+        self.flash_timer.setSingleShot(True)
+
+
+    def toggle_dark_theme(self):
+        self.dark_theme_enabled = not self.dark_theme_enabled
+        self.apply_theme()
+
+    def apply_theme(self):
+        if self.dark_theme_enabled:
+            style_sheet = """
+                background-color: #2b2b2b;
+                color: #ffffff;
+            """
+        else:
+            style_sheet = "" 
+
+        self.setStyleSheet(style_sheet)
+
     def decode_barcodes(self, frame):
         try:
             return decode(frame, symbols=[ZBarSymbol.EAN13])
@@ -103,7 +144,26 @@ class ISBNScanner(QWidget):
             print(f"Error decoding barcodes: {e}")
             return []
 
+    def toggle_camera(self):
+        self.camera_on = not self.camera_on
+        if self.camera_on:
+            self.cap.open(0)
+            self.timer.start(10)
+            self.video_label.clear()
+        else:
+            self.cap.release()
+            self.timer.stop()
+            self.show_camera_off_icon()
+
+    def show_camera_off_icon(self):
+        pixmap = QPixmap('camera_off.png')
+        self.video_label.setPixmap(pixmap)
+        self.video_label.setAlignment(Qt.AlignCenter)
+
     def update_frame(self):
+        if not self.camera_on:
+            return
+
         ret, frame = self.cap.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -123,10 +183,10 @@ class ISBNScanner(QWidget):
 
                 if any(book['isbn'] == barcode_data for book in self.scanned_books):
                     self.update_status("Entry already exists")
-                    # self.display_selected_book_details(barcode_data)
                     self.play_sound("status_change")
+                    self.flash_status("yellow")
                 else:
-                    book_details = ISBN2Details(barcode_data)
+                    book_details = get_book_details(barcode_data)
                     if book_details:
                         self.show_book_details(barcode_data, book_details)
                         self.scanned_books.append({
@@ -136,15 +196,32 @@ class ISBNScanner(QWidget):
                         })
                         self.save_scanned_books()
                         self.play_sound("scan_success")
+                        self.flash_status("green")
                     else:
                         self.update_status("Invalid barcode")
                         self.play_sound("scan_error")
+                        self.flash_status("red")
 
                 cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
             img = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
             pix = QPixmap.fromImage(img)
             self.video_label.setPixmap(pix)
+
+
+    def flash_status(self, color):
+        if color == "green":
+            self.status_label.setStyleSheet("background-color: green; color: black;")
+        elif color == "yellow":
+            self.status_label.setStyleSheet("background-color: yellow; color: black;")
+        elif color == "red":
+            self.status_label.setStyleSheet("background-color: red; color: black;")
+        self.flash_timer.start(500)
+
+
+    def reset_flash(self):
+        self.status_label.setStyleSheet("")
+
 
     def show_book_details(self, isbn, book_details):
         self.details_text.clear()
@@ -175,6 +252,22 @@ class ISBNScanner(QWidget):
 
     def update_status(self, message):
         self.status_label.setText(message)
+
+    def delete_selected_book(self):
+        selected_item = self.book_list.currentItem()
+        if not selected_item:
+            self.update_status("No book selected")
+            self.flash_status("red")
+            return
+
+        isbn = selected_item.text().split(' - ')[0]
+        self.scanned_books = [book for book in self.scanned_books if book['isbn'] != isbn]
+        self.save_scanned_books()
+
+        self.book_list.takeItem(self.book_list.row(selected_item))
+        self.details_text.clear()
+        self.update_status(f"Deleted book with ISBN: {isbn}")
+        self.flash_status("green")
 
     def save_scanned_books(self):
         try:
