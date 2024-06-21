@@ -4,7 +4,7 @@ import os
 def PushToCSV(ISBN_Dict)
     File = "BookCollection.csv"
     fields = ["ISBN-13", "Title", "Author", "Publisher", "Edition", "Description", "Pages", "Genre", "Language"]
-    My_Dict = ISBN_Dict
+    # No need for this. My_Dict = ISBN_Dict
     
     with open(File, 'w') as CSVFile :
         MyWriter = csv.writer(CSVFile, fieldnames = fields)
@@ -14,6 +14,6 @@ def PushToCSV(ISBN_Dict)
         else :
             continue
         
-        MyWriter.writerows(My_Dict)
+        MyWriter.writerows(ISBN_Dict)
     
     CSVFile.close()
