@@ -21,6 +21,15 @@ def get_book_details(ISBN):
             return None
         else:
             volume_info = BookData["items"][0]["volumeInfo"]
+            identifiers = volume_info.get("industryIdentifiers", [])
+            isbn_13 = None
+            for identifier in identifiers:
+                if identifier["type"] == "ISBN_13":
+                    isbn_13 = identifier["identifier"]
+                    break
+            if not isbn_13:
+                return None  # If no ISBN-13 is found, return None
+
             title = volume_info.get("title", "N/A")
             authors = volume_info.get("authors", ["N/A"])
             author = authors[0] if authors else "N/A"
@@ -31,9 +40,9 @@ def get_book_details(ISBN):
             categories = volume_info.get("categories", ["N/A"])
             category = categories[0] if categories else "N/A"
             language = volume_info.get("language", "N/A")
-            
+
             book_details = {
-                "ISBN-13": ISBN,
+                "ISBN-13": isbn_13,
                 "Title": title,
                 "Author": author,
                 "Publisher": publisher,
@@ -147,34 +156,39 @@ class ISBNScanner(QWidget):
     def add_isbn(self):
         isbn_type = self.isbn_type_dropdown.currentText()
         isbn = self.isbn_input.text()
-        
+
         if isbn:
             if isbn_type == "ISBN-10" and len(isbn) != 10:
                 self.update_status("Invalid ISBN-10 length", "red")
             elif isbn_type == "ISBN-13" and len(isbn) != 13:
                 self.update_status("Invalid ISBN-13 length", "red")
             else:
-                if any(book['isbn'] == isbn for book in self.scanned_books):
-                    self.update_status("Entry already exists", "yellow")
-                    self.play_sound("status_change")
-                else:
-                    book_details = get_book_details(isbn)
-                    if book_details:
-                        self.show_book_details(isbn, book_details, "MANUAL ENTRY")
+                book_details = get_book_details(isbn)
+                if book_details:
+                    isbn_13 = book_details["ISBN-13"]
+                    if any(book['isbn'] == isbn_13 for book in self.scanned_books):
+                        self.update_status("Entry already exists", "yellow")
+                        self.play_sound("status_change")
+                        self.flash_status("yellow")
+                    else:
+                        self.show_book_details(isbn_13, book_details, "MANUAL ENTRY")
                         self.scanned_books.append({
-                            'isbn': isbn,
+                            'isbn': isbn_13,
                             'details': book_details,
                             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         })
                         self.save_scanned_books()
+                        self.update_status("Book added successfully", "green")
                         self.play_sound("scan_success")
                         self.flash_status("green")
                         self.isbn_input.clear()
-                    else:
-                        self.update_status("Invalid ISBN or no book found", "red")
-                        self.play_sound("scan_error")
+                else:
+                    self.update_status("Invalid ISBN or no book found", "red")
+                    self.play_sound("scan_error")
+                    self.flash_status("red")
         else:
             self.update_status("Please enter an ISBN", "red")
+            self.flash_status("red")
 
     def update_isbn_info(self):
         isbn = self.isbn_input.text()
