@@ -73,6 +73,9 @@ class ISBNScanner(QWidget):
 
         self.isbn_input = QLineEdit(self)
         self.isbn_input.setPlaceholderText("Enter ISBN")
+        self.isbn_input.textChanged.connect(self.update_isbn_info)
+
+        self.char_count_label = QLabel("0", self)
 
         self.add_button = QPushButton("Add", self)
         self.add_button.clicked.connect(self.add_isbn)
@@ -105,6 +108,7 @@ class ISBNScanner(QWidget):
         self.isbn_entry_layout = QHBoxLayout()
         self.isbn_entry_layout.addWidget(self.isbn_type_dropdown)
         self.isbn_entry_layout.addWidget(self.isbn_input)
+        self.isbn_entry_layout.addWidget(self.char_count_label)
         self.isbn_entry_layout.addWidget(self.add_button)
 
         self.button_layout.addWidget(self.toggle_dark_theme_button)
@@ -138,6 +142,7 @@ class ISBNScanner(QWidget):
         self.flash_timer.timeout.connect(self.reset_flash)
         self.flash_timer.setSingleShot(True)
 
+
     def add_isbn(self):
         isbn_type = self.isbn_type_dropdown.currentText()
         isbn = self.isbn_input.text()
@@ -168,6 +173,16 @@ class ISBNScanner(QWidget):
         else:
             self.update_status("Please enter an ISBN")
             self.flash_status("red")
+
+    def update_isbn_info(self):
+        isbn = self.isbn_input.text()
+        char_count = len(isbn)
+        self.char_count_label.setText(str(char_count))
+        
+        if char_count > 10:
+            self.isbn_type_dropdown.setCurrentText("ISBN-13")
+        else:
+            self.isbn_type_dropdown.setCurrentText("ISBN-10")
 
     def toggle_dark_theme(self):
         self.dark_theme_enabled = not self.dark_theme_enabled
