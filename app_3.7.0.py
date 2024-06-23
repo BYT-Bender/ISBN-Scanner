@@ -74,6 +74,7 @@ class ISBNScanner(QWidget):
         self.isbn_input = QLineEdit(self)
         self.isbn_input.setPlaceholderText("Enter ISBN")
         self.isbn_input.textChanged.connect(self.update_isbn_info)
+        self.isbn_input.returnPressed.connect(self.add_isbn)
 
         self.char_count_label = QLabel("0", self)
 
@@ -149,20 +150,17 @@ class ISBNScanner(QWidget):
         
         if isbn:
             if isbn_type == "ISBN-10" and len(isbn) != 10:
-                self.update_status("Invalid ISBN-10 length")
-                self.flash_status("red")
+                self.update_status("Invalid ISBN-10 length", "red")
             elif isbn_type == "ISBN-13" and len(isbn) != 13:
-                self.update_status("Invalid ISBN-13 length")
-                self.flash_status("red")
+                self.update_status("Invalid ISBN-13 length", "red")
             else:
                 if any(book['isbn'] == isbn for book in self.scanned_books):
-                    self.update_status("Entry already exists")
+                    self.update_status("Entry already exists", "yellow")
                     self.play_sound("status_change")
-                    self.flash_status("yellow")
                 else:
                     book_details = get_book_details(isbn)
                     if book_details:
-                        self.show_book_details(isbn, book_details)
+                        self.show_book_details(isbn, book_details, "MANUAL ENTRY")
                         self.scanned_books.append({
                             'isbn': isbn,
                             'details': book_details,
@@ -173,12 +171,10 @@ class ISBNScanner(QWidget):
                         self.flash_status("green")
                         self.isbn_input.clear()
                     else:
-                        self.update_status("Invalid ISBN or no book found")
+                        self.update_status("Invalid ISBN or no book found", "red")
                         self.play_sound("scan_error")
-                        self.flash_status("red")
         else:
-            self.update_status("Please enter an ISBN")
-            self.flash_status("red")
+            self.update_status("Please enter an ISBN", "red")
 
     def update_isbn_info(self):
         isbn = self.isbn_input.text()
@@ -291,7 +287,7 @@ class ISBNScanner(QWidget):
         self.status_label.setStyleSheet("")
 
 
-    def show_book_details(self, isbn, book_details):
+    def show_book_details(self, isbn, book_details, source="SCANNED"):
         self.details_text.clear()
         self.details_text.append(f"Title: {book_details['Title']}")
         self.details_text.append(f"Author: {book_details['Author']}")
@@ -303,7 +299,7 @@ class ISBNScanner(QWidget):
         self.details_text.append(f"Language: {book_details['Language']}")
 
         self.book_list.addItem(f"{isbn} - {book_details['Title']}")
-        self.process_list.addItem(f"Scanned: {isbn} - {book_details['Title']}")
+        self.process_list.addItem(f"{source}: {isbn} - {book_details['Title']}")
 
     def display_selected_book_details(self, isbn):
         book = next((book for book in self.scanned_books if book['isbn'] == isbn), None)
@@ -318,8 +314,9 @@ class ISBNScanner(QWidget):
             self.details_text.append(f"Genre: {book['details']['Genre']}")
             self.details_text.append(f"Language: {book['details']['Language']}")
 
-    def update_status(self, message):
+    def update_status(self, message, color=""):
         self.status_label.setText(message)
+        self.flash_status(color)
 
     def delete_selected_book(self):
         selected_item = self.book_list.currentItem()
