@@ -11,7 +11,6 @@
 ## [2.0.0] - YYYY-MM-DD
 ### Added
 - Enhanced functionality to retrieve detailed book information from ISBN using `requests` and `BeautifulSoup`.
-- Displays additional book details such as ISBN-13, ISBN-10, author, edition, binding, publisher, and published date.
 - Integrated web scraping to fetch book details from ISBNsearch.org.
 - Improved user interface to show book title and author when scanning valid ISBN-13 or ISBN-10 barcodes.
 
@@ -30,77 +29,71 @@
 - Displays book title, author, publisher, and publish date dynamically in the GUI.
 - Integrated image processing using PIL to display webcam feed in the GUI.
 - Added functionality to show a warning message if book details are not found for a scanned ISBN.
-- Improved overall user experience with real-time barcode scanning and dynamic updates.
 
 ### Changed
 - Refactored the application structure to implement object-oriented programming (OOP) principles.
 - Updated barcode processing to handle EAN-13 barcodes specifically for fetching book details.
 
 ### Fixed
-- Fixed bugs related to displaying webcam feed and updating GUI elements dynamically.
-- Improved error handling for API requests and book detail retrieval.
+- Improved overall GUI responsiveness and layout management.
+- Fixed minor bugs related to text display and barcode decoding.
 
 ## [3.1.0] - YYYY-MM-DD
 ### Added
+- Implemented saving scanned book details including timestamp to a CSV file (`scanned_books.csv`).
+- Added a process box in the GUI to display real-time updates of scanned book entries.
 - Introduced a listbox in the GUI to display scanned ISBNs along with their corresponding titles.
-- Implemented storage of full book details (including ISBN) for each scanned book in a list for future reference.
 
 ### Changed
 - Adjusted GUI layout to include a listbox for displaying scanned ISBNs and titles alongside book details.
 - Enhanced user interaction by providing a visual list of scanned books and their titles.
 
 ### Fixed
-- Improved overall GUI responsiveness and layout management.
-- Fixed minor bugs related to text display and listbox updates.
+- Improved overall stability and performance of the application.
+- Fixed minor bugs related to text display and CSV file handling.
 
 ## [3.2.0] - YYYY-MM-DD
 ### Added
-- Implemented saving scanned book details including timestamp to a CSV file (`scanned_books.csv`).
-- Added a process box in the GUI to display real-time updates of scanned book entries.
 - Implemented loading previously scanned books from the CSV file on application startup.
 
 ### Changed
 - Enhanced user feedback with updated status messages displayed in the GUI.
-- Optimized handling of duplicate barcode entries to notify the user when an entry already exists.
+- Optimized handling of duplicate barcode entries.
 
 ### Fixed
-- Improved overall stability and performance of the application.
-- Fixed minor bugs related to text display and CSV file handling.
+- Improved overall application stability and performance.
+- Addressed issues related to file handling for saving and loading scanned books data.
 
 ## [3.3.0] - YYYY-MM-DD
 ### Added
 - Implemented a PyQt5 GUI for the ISBN Scanner application.
 - Added real-time video feed from the webcam using OpenCV.
 - Added a process list to display real-time updates of scanned book entries.
-- Implemented saving scanned book details including timestamp to a CSV file (`scanned_books.csv`).
-- Added PyQt5 QMessageBox for displaying warnings when book details are not found or when an entry already exists.
 
 ### Changed
-- Enhanced user interface with a more interactive and user-friendly layout using PyQt5 widgets (QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget).
 - Updated status messages displayed in the GUI for better user feedback during scanning and book details retrieval.
+- Optimized layout and organization of PyQt5 widgets for improved usability.
 
 ### Fixed
 - Improved barcode decoding handling to catch and log errors more effectively.
-- Fixed issues related to file handling for saving and loading scanned books data from `scanned_books.csv`.
 - Enhanced overall application stability and performance.
 
 ## [3.4.0] - YYYY-MM-DD
 ### Added
 - Implemented barcode decoding using `pyzbar` library with specific symbol set to `ZBarSymbol.EAN13`.
 - Introduced error handling for barcode decoding errors to improve application stability.
-- Added PyQt5 GUI components including QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, and QMessageBox for user interface and feedback.
 - Enhanced user feedback with QMessageBox for displaying warnings when book details are not found or when an entry already exists.
-- Added PyQt5 signals and slots to connect GUI elements with application logic.
-- Improved status updates in the GUI to provide real-time feedback during barcode scanning and book details retrieval.
+- Expanded details shown in QTextEdit for scanned books to include description, page count, genre, and language.
+- Implemented data persistence using CSV file (`scanned_books.csv`) for storing scanned book data including timestamp.
 
 ### Changed
-- Updated barcode decoding mechanism to handle only EAN-13 barcodes, skipping non-EAN13 types.
+- Updated barcode decoding to focus only on EAN-13 symbols using `pyzbar` library.
 - Optimized the layout of PyQt5 widgets for a more organized and user-friendly interface.
 - Refactored barcode decoding function (`decode_barcodes`) to encapsulate barcode decoding logic and error handling.
 
 ### Fixed
-- Fixed potential issues related to file handling for saving and loading scanned books data (`scanned_books.csv`).
-- Enhanced overall application stability and performance with PyQt5-based GUI improvements and error handling.
+- Addressed potential issues related to file handling and data serialization when saving and loading scanned books.
+- Improved overall application stability and performance with PyQt5-based GUI improvements and error handling.
 
 ## [3.5.0] - YYYY-MM-DD
 ### Added
@@ -108,32 +101,27 @@
 - Implemented PyQt5 GUI components including QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, and QMessageBox for a user-friendly interface.
 - Incorporated error handling for network requests and barcode decoding to improve application stability.
 - Added real-time feedback using QMessageBox for notifying users about invalid barcodes or duplicate entries.
-- Expanded details shown in QTextEdit for scanned books to include description, page count, genre, and language.
-- Introduced a new function `ISBN2Details` to handle fetching comprehensive book details from Google Books API.
-- Implemented data persistence using CSV file (`scanned_books.csv`) for storing scanned book data including timestamp.
 
 ### Changed
 - Updated barcode decoding to focus only on EAN-13 symbols using `pyzbar` library.
 - Optimized layout and organization of PyQt5 widgets to improve usability and visual appeal.
-- Refactored barcode scanning logic (`update_frame`) to handle different scenarios such as valid ISBN and existing entries efficiently.
 
 ### Fixed
-- Addressed potential issues related to file handling and data serialization when saving and loading scanned books.
+- Addressed potential issues related to file handling and data serialization in `save_scanned_books` and `load_scanned_books` methods.
 - Improved overall application performance and reliability through code refactoring and error handling enhancements.
 
 ## [3.6.0] - YYYY-MM-DD
 ### Added
 - Implemented sound notifications using `winsound` module for different events: scan success, scan error, and status change.
-- Added functionality to play beeping sounds on successful scan (`1000 Hz for 200 ms`), scan error (`500 Hz for 400 ms`), and status change (`800 Hz for 300 ms`).
+- Added functionality to play beeping sounds on successful scan, scan error, and status change.
 - Introduced a wrapper method `play_sound` to handle different sound types based on specific events in the application.
 - Implemented functionality to display details of a selected book from the list by clicking on its entry in `book_list`.
-- Enhanced user interface by displaying detailed book information in `details_text` when a book entry is clicked in `book_list`.
 - Updated PyQt5 signal connection (`itemClicked`) to trigger the display of book details on list item click.
 
 ### Changed
-- Modified the `show_book_details` method to append book details to `details_text` and also add the scanned book to `process_list` for tracking scanned items.
+- Refactored `show_book_details` method to append book details to `details_text` and also add the scanned book to `process_list` for tracking scanned items.
 - Refactored `update_frame` method to include sound notifications on successful scan, duplicate entry, and invalid barcode scenarios.
-- Updated `ISBN2Details` function to include fetching additional book information such as description, page count, categories, and language from Google Books API.
+- Updated `ISBN2Details` function to include fetching comprehensive book details from Google Books API.
 - Improved code readability and structure by separating concerns into smaller methods for barcode decoding, book details fetching, UI updates, and sound handling.
 
 ### Fixed
@@ -146,7 +134,6 @@
 - Introduced a "Toggle Dark Theme" button to switch between light and dark themes.
 - Implemented `toggle_dark_theme` method to handle toggling between dark and light themes.
 - Added `apply_theme` method to set stylesheet based on the current theme state (`dark_theme_enabled` flag).
-- Enhanced UI by providing users the option to switch between light and dark themes dynamically.
 - Included a default stylesheet in `apply_theme` for the light theme and updated it for the dark theme.
 
 ### Changed
