@@ -20,12 +20,12 @@ def ISBN2Details(ISBN):
             book_details = {
                 "ISBN-13" : ISBN,
                 "Title" : title,
-                "Author" : authors[0],
+                "Authors" : ",".join(authors),
                 "Publisher" : publisher,
                 "Edition": publishedDate,
                 "Description" : description,
                 "Pages" : pageCount,
-                "Genre" : categories,
+                "Genres" : ",".join(categories),
                 "Language" : language
             }
             return book_details
