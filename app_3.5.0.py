@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QTextEdi
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from datetime import datetime
+from PyQt5.QtWidgets import QComboBox, QLineEdit
 import sys
 import csv
 import cv2
@@ -67,6 +68,15 @@ class ISBNScanner(QWidget):
         self.delete_button = QPushButton("Delete", self)
         self.delete_button.clicked.connect(self.delete_selected_book)
 
+        self.isbn_type_dropdown = QComboBox(self)
+        self.isbn_type_dropdown.addItems(["ISBN-10", "ISBN-13"])
+
+        self.isbn_input = QLineEdit(self)
+        self.isbn_input.setPlaceholderText("Enter ISBN")
+
+        self.add_button = QPushButton("Add", self)
+        self.add_button.clicked.connect(self.add_isbn)
+
         self.toggle_dark_theme_button = QPushButton("Toggle Dark Theme", self)
         self.toggle_dark_theme_button.clicked.connect(self.toggle_dark_theme)
 
@@ -92,9 +102,16 @@ class ISBNScanner(QWidget):
         self.left_layout.addWidget(self.video_label)
         self.left_layout.addWidget(self.status_label)
 
+        self.isbn_entry_layout = QHBoxLayout()
+        self.isbn_entry_layout.addWidget(self.isbn_type_dropdown)
+        self.isbn_entry_layout.addWidget(self.isbn_input)
+        self.isbn_entry_layout.addWidget(self.add_button)
+
         self.button_layout.addWidget(self.toggle_dark_theme_button)
         self.button_layout.addWidget(self.toggle_camera_button)
+
         self.left_layout.addLayout(self.button_layout)
+        self.left_layout.insertLayout(2, self.isbn_entry_layout)
 
         self.right_layout.addWidget(self.details_text)
         self.right_layout.addWidget(self.book_list)
@@ -121,6 +138,36 @@ class ISBNScanner(QWidget):
         self.flash_timer.timeout.connect(self.reset_flash)
         self.flash_timer.setSingleShot(True)
 
+    def add_isbn(self):
+        isbn_type = self.isbn_type_dropdown.currentText()
+        isbn = self.isbn_input.text()
+        if isbn:
+            if isbn_type == "ISBN-10" and len(isbn) != 10:
+                self.update_status("Invalid ISBN-10 length")
+                self.flash_status("red")
+            elif isbn_type == "ISBN-13" and len(isbn) != 13:
+                self.update_status("Invalid ISBN-13 length")
+                self.flash_status("red")
+            else:
+                book_details = get_book_details(isbn)
+                if book_details:
+                    self.show_book_details(isbn, book_details)
+                    self.scanned_books.append({
+                        'isbn': isbn,
+                        'details': book_details,
+                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    })
+                    self.save_scanned_books()
+                    self.play_sound("scan_success")
+                    self.flash_status("green")
+                    self.isbn_input.clear()
+                else:
+                    self.update_status("Invalid ISBN or no book found")
+                    self.play_sound("scan_error")
+                    self.flash_status("red")
+        else:
+            self.update_status("Please enter an ISBN")
+            self.flash_status("red")
 
     def toggle_dark_theme(self):
         self.dark_theme_enabled = not self.dark_theme_enabled
@@ -156,7 +203,7 @@ class ISBNScanner(QWidget):
             self.show_camera_off_icon()
 
     def show_camera_off_icon(self):
-        pixmap = QPixmap('camera_off.png')
+        pixmap = QPixmap('assets/images/camera_off.png')
         self.video_label.setPixmap(pixmap)
         self.video_label.setAlignment(Qt.AlignCenter)
 
@@ -271,7 +318,7 @@ class ISBNScanner(QWidget):
 
     def save_scanned_books(self):
         try:
-            with open('scanned_books.csv', 'w', newline='', encoding='utf-8') as csvfile:
+            with open('assets/data/scanned_books.csv', 'w', newline='', encoding='utf-8') as csvfile:
                 fieldnames = ['isbn', 'title', 'author', 'publisher', 'publish_date', 'description', 'pages', 'genre', 'language', 'timestamp']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
@@ -293,7 +340,7 @@ class ISBNScanner(QWidget):
 
     def load_scanned_books(self):
         try:
-            with open('scanned_books.csv', 'r', newline='', encoding='utf-8') as csvfile:
+            with open('assets/data/scanned_books.csv', 'r', newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     self.scanned_books.append({
