@@ -30,29 +30,16 @@ def ISBN2Details(ISBN):
             
             ISBNList.append(ISBN)
             titleList.append(title)
-            authorsList.append(authors)
+            authorsList.append(", ".join(authors))
             publisherList.append(publisher)
             publishedDateList.append(publishedDate)
             descriptionList.append(description)
             pageCountList.append(pageCount)
-            categoriesList.append(categories)
+            categoriesList.append(", ".join(categories))
             languageList.append(language)
-
-            '''book_details = {
-                "ISBN-13" : ISBN,
-                "Title" : title,
-                "Authors" : ', '.join(authors),
-                "Publisher" : publisher,
-                "Edition": publishedDate,
-                "Description" : description,
-                "Pages" : pageCount,
-                "Genres" : ', '.join(categories),
-                "Language" : language
-            }'''
-            #return book_details
     else:
         return None
-    
+
 df = pd.DataFrame(
     {"ISBN-13" : ISBNList,
      "Title" : titleList,
@@ -62,12 +49,7 @@ df = pd.DataFrame(
      "Description" : descriptionList,
      "Pages" : pageCountList,
      "Genres" : categoriesList,
-     "Language" : languageList},
-     index = [1,2,3,4,5,6,7,8,9])
+     "Language" : languageList}).rename_axis("Sr. No.", axis=1)
+df.index = range(1, len(df)+1)
 
-ISBN2Details(9780136019701)
-ISBN2Details(9780063279636)
-ISBN2Details(9780312539566)
-
-print(authorsList)
-print("All okay.")
+print(df)
