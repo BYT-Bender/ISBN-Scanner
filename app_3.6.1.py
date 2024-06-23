@@ -146,6 +146,7 @@ class ISBNScanner(QWidget):
     def add_isbn(self):
         isbn_type = self.isbn_type_dropdown.currentText()
         isbn = self.isbn_input.text()
+        
         if isbn:
             if isbn_type == "ISBN-10" and len(isbn) != 10:
                 self.update_status("Invalid ISBN-10 length")
@@ -154,22 +155,27 @@ class ISBNScanner(QWidget):
                 self.update_status("Invalid ISBN-13 length")
                 self.flash_status("red")
             else:
-                book_details = get_book_details(isbn)
-                if book_details:
-                    self.show_book_details(isbn, book_details)
-                    self.scanned_books.append({
-                        'isbn': isbn,
-                        'details': book_details,
-                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    })
-                    self.save_scanned_books()
-                    self.play_sound("scan_success")
-                    self.flash_status("green")
-                    self.isbn_input.clear()
+                if any(book['isbn'] == isbn for book in self.scanned_books):
+                    self.update_status("Entry already exists")
+                    self.play_sound("status_change")
+                    self.flash_status("yellow")
                 else:
-                    self.update_status("Invalid ISBN or no book found")
-                    self.play_sound("scan_error")
-                    self.flash_status("red")
+                    book_details = get_book_details(isbn)
+                    if book_details:
+                        self.show_book_details(isbn, book_details)
+                        self.scanned_books.append({
+                            'isbn': isbn,
+                            'details': book_details,
+                            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        })
+                        self.save_scanned_books()
+                        self.play_sound("scan_success")
+                        self.flash_status("green")
+                        self.isbn_input.clear()
+                    else:
+                        self.update_status("Invalid ISBN or no book found")
+                        self.play_sound("scan_error")
+                        self.flash_status("red")
         else:
             self.update_status("Please enter an ISBN")
             self.flash_status("red")
