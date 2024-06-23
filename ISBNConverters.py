@@ -22,3 +22,22 @@ def ISBN10toISBN13(ISBN10):
     #     continue    # No need to add zero to the number.
 
     return f(ISBN10)
+
+def ISBN13toISBN10(ISBN13):
+    # https://freeisbn.com/isbn-converter/
+    ISBN13 -= 9780000000000
+    ISBN13 //= 10
+
+    weight, checkDigit, i = 2, 0, 0
+    l = [int(_) for _ in str(ISBN13)][::-1]
+    
+    for i in range(8) :
+        checkDigit += l[i] * weight
+        weight += 1
+        i += 1
+
+    ISBN13 *= 10
+    
+    f = lambda x : x + 11 - checkDigit%11 if checkDigit%11 else x
+
+    return f(ISBN13)
