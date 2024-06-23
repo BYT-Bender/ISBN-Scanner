@@ -121,7 +121,6 @@
 - Addressed potential issues related to file handling and data serialization when saving and loading scanned books.
 - Improved overall application performance and reliability through code refactoring and error handling enhancements.
 
-
 ## [3.6.0] - YYYY-MM-DD
 ### Added
 - Implemented sound notifications using `winsound` module for different events: scan success, scan error, and status change.
@@ -162,190 +161,85 @@
 ## [3.8.0] - YYYY-MM-DD
 ### Added
 - Added a "Toggle Camera" button to allow users to toggle the camera on and off.
-- Implemented `toggle_camera` method to handle toggling the camera state.
-- Introduced `show_camera_off_icon` method to display a camera-off icon when the camera is turned off.
-- Incorporated `camera_on` flag to track the current camera state (`True` for on, `False` for off).
-- Enhanced UI by providing users the option to turn the camera on or off dynamically.
+- Implemented `toggle_camera` method to handle enabling and disabling the camera feed.
+- Enhanced UI with dynamic updates to display current camera state (on/off) in the status label.
+- Included error handling in `toggle_camera` method to manage exceptions related to camera initialization and release.
 
 ### Changed
-- Updated the UI layout to include the "Toggle Camera" button in the left layout alongside the video and status label.
-- Adjusted `update_frame` method to check `self.camera_on` flag before reading frames from the camera.
-- Refactored camera-related methods to ensure proper camera initialization and release.
+- Updated the UI layout to incorporate the "Toggle Camera" button next to the "Toggle Dark Theme" button for easy access.
+- Refactored `toggle_camera` method to manage camera state toggling and update status messages accordingly.
+- Optimized camera initialization and release processes to improve application performance and stability.
 
 ### Fixed
-- Addressed potential issues related to camera handling to improve reliability and user experience.
-- Optimized camera controls to prevent resource leaks and ensure smooth operation.
-
-
+- Addressed potential bugs related to camera initialization and release processes in `toggle_camera` method.
+- Improved overall reliability and user experience by providing seamless camera toggling functionality.
 
 ## [4.0.0] - YYYY-MM-DD
-
-### Added Features:
-#### ISBN Type Selection:
-
-- Added a dropdown (QComboBox) to select between "ISBN-10" and "ISBN-13" types for entering ISBN.
-Depending on the length of the entered ISBN, automatically switches between "ISBN-10" and "ISBN-13".
-ISBN Input Validation:
-
-- Validates the length of the entered ISBN based on the selected type ("ISBN-10" or "ISBN-13").
-Displays error messages and flashes status indicators for invalid ISBN lengths.
-ISBN Adding Functionality:
-
-- Introduced an "Add" button that triggers fetching book details upon entering a valid ISBN.
-Displays fetched book details in the UI upon successful retrieval.
-Supports addition of books to the scanned books list with timestamp.
-
-### UI/UX Improvements:
-#### Enhanced Dark Theme:
-
-- Implemented a toggle button to switch between dark and light themes.
-Improved styling for better readability and user experience in dark mode.
-Camera Toggle Functionality:
-
-- Added functionality to toggle the camera on/off using a dedicated button (toggle_camera_button).
-Displays a camera-off icon (camera_off.png) when the camera is turned off.
-Bug Fixes and Enhancements:
-Improved Status Updates:
-
-- Enhanced status updates to provide more informative messages for various actions (e.g., scan success, errors, entry already exists).
-Error Handling:
-
-- Implemented error handling improvements for barcode decoding errors and network errors when fetching book details.
-Data Persistence:
-
-- Updated file paths for saving and loading scanned books data (scanned_books.csv located in assets/data/).
-
-### Code Organization:
-#### Modularized Layout Management:
-
-- Improved layout management by organizing UI elements into separate layouts (left_layout, right_layout, button_layout, etc.) for better readability and maintainability.
-Refactored Code Structure:
-
-- Restructured code to enhance readability and maintainability, including modularizing functions and separating concerns.
-
-## Version 4.1.0 Release Notes
-
-### New Features
-
-- **Dark Mode Toggle**
-  - Added a button to toggle between light and dark themes for the application UI.
-  - Users can now switch to a dark background with white text for better readability in low-light environments.
-
-- **Camera Toggle**
-  - Implemented a button to toggle the camera feed on and off.
-  - Allows users to disable the camera when not scanning, conserving resources and preventing unintended captures.
-
-- **Dynamic ISBN Input Validation**
-  - Improved ISBN input validation based on the selected ISBN type (ISBN-10 or ISBN-13).
-  - Provides immediate feedback on input length validity before attempting to fetch book details.
-
-- **Error Handling and Status Updates**
-  - Enhanced error messages and status updates displayed to the user interface.
-  - Alerts users about invalid ISBNs, existing entries, and errors encountered during book data retrieval.
-
-- **Sound Feedback**
-  - Added sound notifications for successful scans, errors, and status changes.
-  - Enhances user experience by providing audible confirmation of actions taken.
-
-- **Book Details Display**
-  - Expanded book details display with additional information:
-    - Publisher
-    - Published Date (Edition)
-    - Description
-    - Page Count
-    - Genre
-    - Language
-
-- **Persistent Data Storage**
-  - Implemented CSV file storage for scanned books data.
-  - Enables persistence across application restarts, maintaining a history of scanned ISBNs and associated book details.
-
-- **User Interface Improvements**
-  - Enhanced layout and alignment for better usability.
-  - Improved clarity and organization of controls, lists, and status indicators.
-
-### Bug Fixes
-
-- **Camera Initialization**
-  - Fixed issues related to camera initialization and release.
-  - Ensures proper handling of camera resources to prevent crashes and errors.
-
-- **Barcode Detection**
-  - Improved barcode detection accuracy and handling.
-  - Ensures consistent recognition and processing of valid EAN-13 barcodes.
-
-### Known Issues
-
-- **Camera Stability**
-  - Occasional instability when toggling the camera on and off repeatedly.
-  - Ongoing investigation and improvements planned for future updates.
-
-### Developer Notes
-
-- **Code Optimization**
-  - Refactored code for improved readability and maintainability.
-  - Implemented best practices for PyQt5 application development.
-
-- **Dependencies**
-  - Updated dependencies to latest stable versions.
-  - Ensures compatibility and security updates.
- 
-  
-## Version 4.2.0
-
 ### Added
-- Implemented manual entry of ISBN numbers.
-- Added support for scanning ISBN-10 and ISBN-13 codes.
-- Integrated Google Books API to fetch book details based on ISBN.
-- Included functionality to display scanned book details in the application.
-- Implemented saving scanned books to a CSV file for persistence.
-- Added sound notifications for successful scans, errors, and status changes.
-- Implemented a dark theme toggle for the application interface.
-- Added a feature to toggle the camera on and off.
-- Included a feature to delete scanned books from the list.
+- Introduced manual entry of ISBN numbers for scanning books without a barcode.
+- Added support for scanning both ISBN-10 and ISBN-13 codes using the webcam.
+- Integrated Google Books API to fetch book details based on ISBN for scanned books.
+- Included functionality to display scanned book details in the application interface (`book_list` and `details_text`).
+- Implemented saving scanned books to a CSV file (`scanned_books.csv`) for persistence.
+- Added sound notifications for successful scans, errors, and status changes using `winsound` module.
+- Implemented a dark theme toggle (`toggle_dark_theme`) for the application interface.
+- Added a feature to toggle the camera on and off (`toggle_camera`).
+- Included a feature to delete scanned books from the list (`delete_book`).
 
 ### Changed
-- Refactored barcode scanning logic to handle different barcode types.
-- Improved UI layout to display scanned books and process logs more efficiently.
-- Enhanced error handling for network requests and barcode decoding errors.
+- Refactored barcode scanning logic to handle different barcode types (ISBN-10 and ISBN-13).
+- Improved UI layout to display scanned books (`book_list`) and process logs (`process_list`) efficiently.
+- Enhanced error handling for network requests (`requests.exceptions.RequestException`) and barcode decoding (`pyzbar` library).
 
 ### Fixed
 - Fixed bugs related to displaying incorrect book details for scanned ISBNs.
-- Fixed issues with handling edge cases for invalid ISBNs and network errors.
 - Addressed UI inconsistencies and improved overall user experience.
 
+## [4.1.0] - YYYY-MM-DD
+### Added
+- Implemented PyQt5 GUI components including QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, and QMessageBox for a user-friendly interface.
+- Added real-time video feed from the webcam using OpenCV.
+- Implemented a process list (`process_list`) to display real-time updates of scanned book entries.
+- Enhanced user interaction by providing a visual list of scanned books and their titles (`book_list`).
 
-## Version 4.3.0
+### Changed
+- Refactored the application structure to implement object-oriented programming (OOP) principles.
+- Updated barcode processing to handle EAN-13 barcodes specifically for fetching book details.
 
-### Refactored Book Details Handling:
-- Enhanced error handling in `get_book_details()` function when fetching book details from Google Books API.
-- Improved validation for ISBN-13 identification and retrieval.
+### Fixed
+- Fixed minor bugs related to text display and listbox updates in the GUI.
+- Improved overall GUI responsiveness and layout management.
 
-### UI Enhancements:
-- Introduced a dark theme toggle button (`toggle_dark_theme_button`) to switch between light and dark themes.
-- Improved camera toggle functionality (`toggle_camera_button`) for turning the camera on/off.
-- Integrated `status_label` to display status messages with color coding for different states (e.g., success, warning, error).
+## [4.2.0] - YYYY-MM-DD
+### Added
+- Introduced a listbox in the GUI to display scanned ISBNs along with their corresponding titles (`book_list`).
+- Implemented storage of full book details (including ISBN) for each scanned book in a list for future reference (`scanned_books`).
 
-### Manual ISBN Entry:
-- Added manual entry of ISBNs via `isbn_input` (`QLineEdit`) and `add_button` (`QPushButton`) for adding books manually.
-- Introduced `isbn_type_dropdown` (`QComboBox`) to select between ISBN-10 and ISBN-13 formats.
+### Changed
+- Adjusted GUI layout to include a listbox (`book_list`) for displaying scanned ISBNs and titles alongside book details.
+- Enhanced user interaction by providing a visual list of scanned books and their titles.
 
-### Barcode Scanning:
-- Implemented barcode scanning using OpenCV (`cv2`) and `pyzbar` library for decoding EAN-13 barcodes.
-- Displayed scanned book details in `details_text` (`QTextEdit`) and updated lists (`book_list`, `process_list`).
+### Fixed
+- Fixed UI issue where clicking on a book entry in `book_list` did not update the details in `details_text` properly.
+- Addressed potential bugs related to file handling and data serialization in `save_scanned_books` and `load_scanned_books` methods.
 
-### Data Persistence:
-- Improved saving and loading of scanned books using CSV files (`scanned_books.csv`).
-- Added `save_scanned_books()` and `load_scanned_books()` methods for managing scanned books' data across sessions.
+## [4.3.0] - YYYY-MM-DD
+### Added
+- Implemented manual entry of ISBN numbers.
+- Added support for scanning ISBN-10 and ISBN-13 codes using the webcam.
+- Integrated Google Books API to fetch book details based on ISBN for scanned books.
+- Included functionality to display scanned book details in the application interface (`book_list` and `details_text`).
+- Implemented saving scanned books to a CSV file (`scanned_books.csv`) for persistence.
+- Added sound notifications for successful scans, errors, and status changes using `winsound` module.
+- Implemented a dark theme toggle (`toggle_dark_theme`) for the application interface.
+- Added a feature to toggle the camera on and off (`toggle_camera`).
+- Included a feature to delete scanned books from the list (`delete_book`).
 
-### User Feedback:
-- Enhanced user feedback with status updates (`update_status()`) displayed in `status_label`.
-- Implemented sound notifications (`play_sound()`) for different events (scan success, scan error, status change) using `winsound`.
+### Changed
+- Refactored barcode scanning logic to handle different barcode types (ISBN-10 and ISBN-13).
+- Improved UI layout to display scanned books (`book_list`) and process logs (`process_list`) efficiently.
+- Enhanced error handling for network requests (`requests.exceptions.RequestException`) and barcode decoding (`pyzbar` library).
 
-### UI Layout and Components:
-- Organized UI components into `QVBoxLayout` and `QHBoxLayout` layouts for better structure and clarity.
-- Included buttons (`delete_button`, `quit_button`) for deleting selected books and quitting the application, respectively.
-
-### Error Handling and Logging:
-- Improved error handling for network requests (`requests.exceptions.RequestException`) and barcode decoding errors (`Exception`).
-
+### Fixed
+- Fixed bugs related to displaying incorrect book details for scanned ISBNs.
+- Addressed UI inconsistencies and improved overall user experience.
